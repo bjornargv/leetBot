@@ -4,6 +4,7 @@ const fs = require("fs");
 let leetMessageCount = 0;
 const client = new Discord.Client({ intents: [3276799] });
 const counts = new Map();
+const leetRegex = /(^|[^a-z])leet($|[^a-z])/i;
 
 function loadCounts() {
 	fs.readFile("counts.json", (err, data) => {
@@ -43,12 +44,12 @@ client.on("messageCreate", (message) => {
 	if (message.author.bot) return;
 
 	const now = new Date();
-	console.log(message.content);
+	const isLeetText = leetRegex.test(message.content);
 
 	if (
 		now.getHours() === 12 &&
 		now.getMinutes() === 37 &&
-		message.content.toLowerCase().includes("leet")
+		isLeetText
 	) {
 		const user = message.author;
 		const today = new Date().toDateString();
@@ -89,7 +90,7 @@ client.on("messageCreate", (message) => {
 				leetMessageCount = 0;
 			}, 60 * 1000);
 		}
-	} else if (message.content.toLowerCase().includes("leet")) {
+	} else if (isLeetText) {
 		message.react("870236655624290304");
 	}
 });
