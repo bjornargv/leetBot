@@ -43,55 +43,51 @@ client.on("ready", () => {
 client.on("messageCreate", (message) => {
 	if (message.author.bot) return;
 
-	const now = new Date();
-	const isLeetText = leetRegex.test(message.content);
+	if (leetRegex.test(message.content)) {
+		const now = new Date();
+		if (now.getHours() === 12 && now.getMinutes() === 37) {
+			const user = message.author;
+			const today = new Date().toDateString();
 
-	if (
-		now.getHours() === 12 &&
-		now.getMinutes() === 37 &&
-		isLeetText
-	) {
-		const user = message.author;
-		const today = new Date().toDateString();
+			if (counts.has(user.id) && counts.get(user.id).date === today) {
+				message.react("❌");
+				return;
+			}
 
-		if (counts.has(user.id) && counts.get(user.id).date === today) {
-			message.react("❌");
-			return;
-		}
+			if (!counts.has(user.id)) {
+				counts.set(user.id, { count: 0, date: today });
+			} else {
+				counts.get(user.id).date = today;
+			}
+			counts.get(user.id).count++;
+			message.react("🥳"); // Emoji for 13:37
 
-		if (!counts.has(user.id)) {
-			counts.set(user.id, { count: 0, date: today });
+			saveCounts();
+			leetMessageCount++;
+
+			if (leetMessageCount === 1) {
+				setTimeout(() => {
+					const entries = Array.from(counts.entries()).map(
+						([userId, { count }]) => ({ userId, count })
+					);
+					entries.sort((a, b) => b.count - a.count);
+
+					// Create a string containing the leaderboard message
+					let leaderboardMessage = "**Leaderboard:**\n";
+					for (let i = 0; i < entries.length; i++) {
+						const user = client.users.cache.get(entries[i].userId);
+						leaderboardMessage += `${i + 1}. ${user.username} - ${
+							entries[i].count
+						} leet(s)\n`;
+					}
+
+					message.channel.send(leaderboardMessage);
+					leetMessageCount = 0;
+				}, 60 * 1000);
+			}
 		} else {
-			counts.get(user.id).date = today;
+			message.react("870236655624290304");
 		}
-		counts.get(user.id).count++;
-		message.react("✅"); // Emoji for 13:37
-
-		saveCounts();
-		leetMessageCount++;
-
-		if (leetMessageCount === 1) {
-			setTimeout(() => {
-				const entries = Array.from(counts.entries()).map(
-					([userId, { count }]) => ({ userId, count })
-				);
-				entries.sort((a, b) => b.count - a.count);
-
-				// Create a string containing the leaderboard message
-				let leaderboardMessage = "**Leaderboard:**\n";
-				for (let i = 0; i < entries.length; i++) {
-					const user = client.users.cache.get(entries[i].userId);
-					leaderboardMessage += `${i + 1}. ${user.username} - ${
-						entries[i].count
-					} leet(s)\n`;
-				}
-
-				message.channel.send(leaderboardMessage);
-				leetMessageCount = 0;
-			}, 60 * 1000);
-		}
-	} else if (isLeetText) {
-		message.react("870236655624290304");
 	}
 });
 
