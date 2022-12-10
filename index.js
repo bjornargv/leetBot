@@ -74,7 +74,7 @@ client.on("messageCreate", (message) => {
 
 					// Create a string containing the leaderboard message
 					let leaderboardMessage = "**Leaderboard:**\n";
-					for (let i = 0; i < entries.length; i++) {
+					for (let i = 0; i < Math.min(entries.length, 10); i++) {
 						const user = client.users.cache.get(entries[i].userId);
 						leaderboardMessage += `${i + 1}. ${user.username} - ${
 							entries[i].count
